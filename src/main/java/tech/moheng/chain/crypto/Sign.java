@@ -2,6 +2,7 @@ package tech.moheng.chain.crypto;
 
 import static tech.moheng.chain.utils.utils.Assertions.verifyPrecondition;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.SignatureException;
 import java.util.Arrays;
@@ -11,10 +12,12 @@ import org.bouncycastle.asn1.x9.X9IntegerConverter;
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.crypto.params.ECDomainParameters;
 import org.bouncycastle.math.ec.ECAlgorithms;
+import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
 import org.bouncycastle.math.ec.FixedPointCombMultiplier;
 import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
 
+import tech.moheng.chain.crypto.sm.SM3;
 import tech.moheng.chain.utils.utils.Numeric;
 
 /**
@@ -30,6 +33,10 @@ public class Sign {
     static final ECDomainParameters CURVE = new ECDomainParameters(
             CURVE_PARAMS.getCurve(), CURVE_PARAMS.getG(), CURVE_PARAMS.getN(), CURVE_PARAMS.getH());
     static final BigInteger HALF_CURVE_ORDER = CURVE_PARAMS.getN().shiftRight(1);
+    
+    private static final X9ECParameters CURVE_PARAMS_SM = CustomNamedCurves.getByName("sm2p256v1");
+    static final ECDomainParameters CURVE_SM = new ECDomainParameters(
+    		CURVE_PARAMS_SM.getCurve(), CURVE_PARAMS_SM.getG(), CURVE_PARAMS_SM.getN(), CURVE_PARAMS_SM.getH());
 
     public static SignatureData signMessage(byte[] message, ECKeyPair keyPair) {
         return signMessage(message, keyPair, true);
@@ -63,6 +70,33 @@ public class Sign {
 
         // 1 header + 32 bytes for R + 32 bytes for S
         byte v = (byte) headerByte;
+        byte[] r = Numeric.toBytesPadded(sig.r, 32);
+        byte[] s = Numeric.toBytesPadded(sig.s, 32);
+
+        return new SignatureData(v, r, s);
+    }
+    
+    /**
+     * 国密加密算法
+     * @param message
+     * @param keyPair
+     * @param needToHash
+     * @return
+     * @throws IOException 
+     */
+    public static SignatureData signMessageSM(byte[] message, ECKeyPair keyPair, boolean needToHash) throws IOException {
+        byte[] messageHash;
+        if (needToHash) {
+            messageHash = SM3.hash(message);
+        } else {
+            messageHash = message;
+        }
+
+        ECDSASignature sig = keyPair.signSM(messageHash);
+        // Now we have to work backwards to figure out the recId needed to recover the signature.
+
+        int v = 0;
+        // 1 header + 32 bytes for R + 32 bytes for S
         byte[] r = Numeric.toBytesPadded(sig.r, 32);
         byte[] s = Numeric.toBytesPadded(sig.s, 32);
 
@@ -208,11 +242,23 @@ public class Sign {
         byte[] encoded = point.getEncoded(false);
         return new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));  // remove prefix
     }
+    
+    /**
+     * 国密SM
+     * @param privKey
+     * @return
+     */
+    public static BigInteger publicKeyFromPrivateSM(BigInteger privKey) {
+        ECPoint point = publicPointFromPrivateSM(privKey);
 
+        byte[] encoded = point.getEncoded(false);
+        return new BigInteger(1, Arrays.copyOfRange(encoded, 1, encoded.length));  // remove prefix
+    }
+    
     /**
      * Returns public key point from the given private key.
      */
-    private static ECPoint publicPointFromPrivate(BigInteger privKey) {
+    public static ECPoint publicPointFromPrivate(BigInteger privKey) {
         /*
          * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
          * order, but that could change in future versions.
@@ -221,6 +267,21 @@ public class Sign {
             privKey = privKey.mod(CURVE.getN());
         }
         return new FixedPointCombMultiplier().multiply(CURVE.getG(), privKey);
+    }
+    
+    /**
+     * 国密SM
+     * Returns public key point from the given private key.
+     */
+    public static ECPoint publicPointFromPrivateSM(BigInteger privKey) {
+        /*
+         * TODO: FixedPointCombMultiplier currently doesn't support scalars longer than the group
+         * order, but that could change in future versions.
+         */
+        if (privKey.bitLength() > CURVE_SM.getN().bitLength()) {
+            privKey = privKey.mod(CURVE_SM.getN());
+        }
+        return new FixedPointCombMultiplier().multiply(CURVE_SM.getG(), privKey);
     }
 
     public static class SignatureData {

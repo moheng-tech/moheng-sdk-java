@@ -2,6 +2,7 @@ package tech.moheng.chain.crypto;
 
 import static tech.moheng.chain.crypto.SecureRandomUtils.secureRandom;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
@@ -14,6 +15,7 @@ import java.util.Arrays;
 
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+import tech.moheng.chain.crypto.sm.SM3;
 import tech.moheng.chain.utils.utils.Numeric;
 import tech.moheng.chain.utils.utils.Strings;
 
@@ -60,14 +62,43 @@ public class Keys {
         KeyPair keyPair = createSecp256k1KeyPair();
         return ECKeyPair.create(keyPair);
     }
+    
+    /**
+     * 国密
+     * @return
+     * @throws InvalidAlgorithmParameterException
+     * @throws NoSuchAlgorithmException
+     * @throws NoSuchProviderException
+     */
+    public static ECKeyPair createEcSM2KeyPair()
+			throws InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException {
+		KeyPair keyPair = createSm2p256v1KeyPair();
+		return ECKeyPair.create(keyPair);
+	}
+	
+	/**
+	 * 生成国密SM2密钥对
+	 * @return
+	 * @throws NoSuchProviderException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidAlgorithmParameterException
+	 */
+	static KeyPair createSm2p256v1KeyPair()
+			throws NoSuchProviderException, NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+
+		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC", new BouncyCastleProvider());
+		ECGenParameterSpec ecGenParameterSpec = new ECGenParameterSpec("sm2p256v1");
+		keyPairGenerator.initialize(ecGenParameterSpec, secureRandom());
+		return keyPairGenerator.generateKeyPair();
+	}
+    
 
     public static String getAddress(ECKeyPair ecKeyPair) {
         return getAddress(ecKeyPair.getPublicKey());
     }
 
     public static String getAddress(BigInteger publicKey) {
-        return getAddress(
-                Numeric.toHexStringWithPrefixZeroPadded(publicKey, PUBLIC_KEY_LENGTH_IN_HEX));
+        return getAddress(Numeric.toHexStringWithPrefixZeroPadded(publicKey, PUBLIC_KEY_LENGTH_IN_HEX));
     }
 
     public static String getAddress(String publicKey) {
@@ -80,6 +111,39 @@ public class Keys {
         }
         String hash = Hash.sha3(publicKeyNoPrefix);
         return hash.substring(hash.length() - ADDRESS_LENGTH_IN_HEX);  // right most 160 bits
+    }
+    
+    /**
+     * 国密
+     * @param publicKey
+     * @return
+     * @throws IOException 
+     */
+    public static String getAddressSM(ECKeyPair ecKeyPair) throws IOException {
+    	
+    	String publicKey = Numeric.toHexStringWithPrefixZeroPadded(ecKeyPair.getPublicKey(), PUBLIC_KEY_LENGTH_IN_HEX);
+        String publicKeyNoPrefix = Numeric.cleanHexPrefix(publicKey);
+
+        if (publicKeyNoPrefix.length() < PUBLIC_KEY_LENGTH_IN_HEX) {
+            publicKeyNoPrefix = Strings.zeros(
+                    PUBLIC_KEY_LENGTH_IN_HEX - publicKeyNoPrefix.length())
+                    + publicKeyNoPrefix;
+        }
+        String hash = SM3.hash(publicKeyNoPrefix);
+        return hash.substring(hash.length() - ADDRESS_LENGTH_IN_HEX);  // right most 160 bits
+    }
+    
+    /**
+     * 国密
+     * @param publicKey
+     * @return
+     * @throws IOException 
+     */
+    public static String getPublicKeyStrSM(ECKeyPair ecKeyPair) throws IOException {
+    	
+    	String publicKey = Numeric.toHexStringWithPrefixZeroPadded(ecKeyPair.getPublicKey(), PUBLIC_KEY_LENGTH_IN_HEX);
+        String publicKeyNoPrefix = Numeric.cleanHexPrefix(publicKey);
+        return "04"+publicKeyNoPrefix; 
     }
 
     public static byte[] getAddress(byte[] publicKey) {

@@ -263,7 +263,7 @@ public class WalletFile {
         
     }
 
-    interface KdfParams {
+    public interface KdfParams {
         int getDklen();
 
         String getSalt();

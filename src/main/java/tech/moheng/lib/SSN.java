@@ -1,5 +1,6 @@
 package tech.moheng.lib;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
@@ -25,10 +26,28 @@ public class SSN {
 	private String ssnAddress;
 	private int chainId;
 	private static ResourceBundle bundle = ResourceBundle.getBundle("application");
+	private String isSm;
 
 	public SSN(String ssnAddress){
 		this.ssnAddress = ssnAddress;
 		this.chainId = Integer.valueOf(bundle.getString("chainId"));
+	}
+	
+	public SSN(String ssnAddress,int chainId){
+		this.ssnAddress = ssnAddress;
+		this.chainId = chainId;
+	}
+	
+	public SSN(String ssnAddress,String isSm){
+		this.ssnAddress = ssnAddress;
+		this.chainId = Integer.valueOf(bundle.getString("chainId"));
+		this.isSm = isSm;
+	}
+	
+	public SSN(String ssnAddress,String isSm,int chainId){
+		this.ssnAddress = ssnAddress;
+		this.chainId = chainId;
+		this.isSm = isSm;
 	}
 
 	/**
@@ -64,6 +83,7 @@ public class SSN {
 		JSONArray params = new JSONArray();
 		params.add(address);
 		String result = HttpClient.post(ssnAddress, "mh_getBalance", params);
+		System.out.println(result);
 		BigDecimal bigBalance = Convert.hexToNumber(result);
 		BigDecimal balance = Convert.fromSha(bigBalance, Convert.Unit.MC);
 		return balance;
@@ -223,8 +243,9 @@ public class SSN {
 	 * @param strData 上链信息
 	 * @param privateKey 发送方钱包私钥
 	 * @return
+	 * @throws IOException 
 	 */
-	public String sendRawTransactionTransfer (String fromAddress, String toAddress, double amount, String strData, String privateKey){
+	public String sendRawTransactionTransfer (String fromAddress, String toAddress, double amount, String strData, String privateKey) throws IOException{
 		int resultNonce = getNonce(fromAddress);
 		BigInteger nonce = BigInteger.valueOf(resultNonce);
 		BigInteger gas = new BigInteger("0");
@@ -239,8 +260,13 @@ public class SSN {
 				value, strData, shardingFlag);
 		net.sf.json.JSONObject rawTx = net.sf.json.JSONObject.fromObject(rawTransaction);
 		System.out.println("rawTx:" + rawTx.toString());
-
-		String signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		
+		String signedTx = "";
+		if("sm".equals(isSm)){
+			signedTx = TransactionEncoder.signMessageSM(rawTransaction, chainId, Credentials.createSM(privateKey));
+		}else{
+			signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		}
 
 		// 发送交易
 		String result = sendSignTransaction(signedTx);
@@ -258,8 +284,9 @@ public class SSN {
 	 * @param privateKey 发送方钱包私钥
 	 * @param nonce 发送方钱包交易nonce,可根据方法getNonce(address)得到
 	 * @return
+	 * @throws IOException 
 	 */
-	public String sendRawTransactionTransfer(String fromAddress, String toAddress, double amount, String strData, String privateKey, int nonce) {
+	public String sendRawTransactionTransfer(String fromAddress, String toAddress, double amount, String strData, String privateKey, int nonce) throws IOException {
 		BigInteger noncePaream = BigInteger.valueOf(nonce);
 		BigInteger gas = new BigInteger("0");
 		BigInteger gasPrice = new BigInteger("0");
@@ -274,8 +301,13 @@ public class SSN {
 		net.sf.json.JSONObject rawTx = net.sf.json.JSONObject.fromObject(rawTransaction);
 		System.out.println("rawTx:" + rawTx.toString());
 
-		String signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
-
+		String signedTx = "";
+		if("sm".equals(isSm)){
+			signedTx = TransactionEncoder.signMessageSM(rawTransaction, chainId, Credentials.createSM(privateKey));
+		}else{
+			signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		}
+		
 		// 发送交易
 		String result = sendSignTransaction(signedTx);
 		return result;
@@ -292,8 +324,9 @@ public class SSN {
 	 * 合约方法参数类型对应JAVA类 参照 com.moheng.chain.abi.datatypes 包下
 	 * @param privateKey 发送方钱包私钥
 	 * @return
+	 * @throws IOException 
 	 */
-	public String sendRawTransaction(String fromAddress, String contractAddress, double amount, String funcName, List list, String privateKey) {
+	public String sendRawTransaction(String fromAddress, String contractAddress, double amount, String funcName, List list, String privateKey) throws IOException {
 		int nonce = getNonce(fromAddress);
 		BigInteger noncePaream = BigInteger.valueOf(nonce);
 
@@ -313,7 +346,12 @@ public class SSN {
 		net.sf.json.JSONObject rawTx = net.sf.json.JSONObject.fromObject(rawTransaction);
 		System.out.println("rawTx:" + rawTx.toString());
 
-		String signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		String signedTx = "";
+		if("sm".equals(isSm)){
+			signedTx = TransactionEncoder.signMessageSM(rawTransaction, chainId, Credentials.createSM(privateKey));
+		}else{
+			signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		}
 		
 		// 发送交易
 		String result = sendSignTransaction(signedTx);
@@ -333,8 +371,9 @@ public class SSN {
 	 * @param privateKey 发送方钱包私钥
 	 * @param nonce 发送方钱包交易nonce,可根据方法getNonce(address)得到
 	 * @return
+	 * @throws IOException 
 	 */
-	public String sendRawTransaction(String fromAddress, String contractAddress, double amount, String funcName, List list, String privateKey,int nonce) {
+	public String sendRawTransaction(String fromAddress, String contractAddress, double amount, String funcName, List list, String privateKey,int nonce) throws IOException {
 		BigInteger noncePaream = BigInteger.valueOf(nonce);
 
 		String strData = MhUtil.getData(funcName, list);
@@ -353,7 +392,12 @@ public class SSN {
 		net.sf.json.JSONObject rawTx = net.sf.json.JSONObject.fromObject(rawTransaction);
 		System.out.println("rawTx:" + rawTx.toString());
 
-		String signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		String signedTx = "";
+		if("sm".equals(isSm)){
+			signedTx = TransactionEncoder.signMessageSM(rawTransaction, chainId, Credentials.createSM(privateKey));
+		}else{
+			signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		}
 		
 		// 发送交易
 		String result = sendSignTransaction(signedTx);
@@ -384,8 +428,9 @@ public class SSN {
 	 * 合约方法参数类型对应JAVA类 参照 com.moheng.chain.abi.datatypes 包下
 	 * @param privateKey 发送方钱包私钥
 	 * @return
+	 * @throws IOException 
 	 */
-	public String getSignedTx(String fromAddress, String contractAddress, double amount, String funcName, List list, String privateKey){
+	public String getSignedTx(String fromAddress, String contractAddress, double amount, String funcName, List list, String privateKey) throws IOException{
 		int nonce = getNonce(fromAddress);
 		BigInteger noncePaream = BigInteger.valueOf(nonce);
 
@@ -405,7 +450,12 @@ public class SSN {
 		net.sf.json.JSONObject rawTx = net.sf.json.JSONObject.fromObject(rawTransaction);
 		System.out.println("rawTx:" + rawTx.toString());
 
-		String signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		String signedTx = "";
+		if("sm".equals(isSm)){
+			signedTx = TransactionEncoder.signMessageSM(rawTransaction, chainId, Credentials.createSM(privateKey));
+		}else{
+			signedTx = TransactionEncoder.signMessage(rawTransaction, chainId, Credentials.create(privateKey));
+		}
 		
 		return signedTx;
 	}

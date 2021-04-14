@@ -1,5 +1,6 @@
 package com.moheng;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,21 +13,23 @@ import tech.moheng.chain.abi.datatypes.Utf8String;
 import tech.moheng.lib.SSN;
 
 /**
- * Unit test for simple App.
+ * SSN test.
  */
 public class SSNTest {
-	// private static String address =
-	// "0x18fbfd8971f3fa8edced66939714663a0a637f5e";
-	private static String address = "0xabd9e6c9951c9377171d2977d0b11383723926f1";
+	private static String address = "0xf9efdec0293f5742c24ea35b1bfa0f341bdea51d";
 	private static String txHash = "0x76339c06fbbf158c646b44dca3de8a52127b913b8de476029eafcef141af2c16";
 
-	public static void main(String[] args) {
-		SSN ssn = new SSN("http://192.168.10.20:2012");
-//		SSN ssn = new SSN("http://121.37.215.105:8646");
+	public static void main(String[] args) throws IOException {
+		String server = "http://192.168.10.20:2010";//192国密
+//		String server = "http://121.37.215.105:8646";//线上测试
+//		String server = "http://192.168.10.20:2012";//192测试
+		
+//		SSN ssn = new SSN(server);
+		SSN ssn = new SSN(server,"sm",102);//国密
 
 //		test_getSsnId(ssn);
 //		test_getNonce(ssn);
-//		test_getBalance(ssn);
+		test_getBalance(ssn);
 //		test_getBlockNumber(ssn);
 //		test_getBlock(ssn);
 //		test_getBlockList(ssn);
@@ -36,9 +39,9 @@ public class SSNTest {
 //		test_getContractAddrList(ssn);
 //		test_anyCall(ssn);
 //		test_call(ssn);
-//		test_sendRawTransactionTransfer(ssn);
+		test_sendRawTransactionTransfer(ssn);
 //		test_sendRawTransaction(ssn);
-		test_getSignedTx(ssn);
+//		test_getSignedTx(ssn);
 	}
 
 	public static void test_getSsnId(SSN ssn) {
@@ -143,17 +146,17 @@ public class SSNTest {
 		System.out.println();
 	}
 
-	public static void test_sendRawTransactionTransfer(SSN ssn) {
+	public static void test_sendRawTransactionTransfer(SSN ssn) throws IOException {
 		System.out.println("13-------mh_sendRawTransaction---sendRawTransactionPrivate-------------");
-		String tradeHash = ssn.sendRawTransactionTransfer("0xabd9e6c9951c9377171d2977d0b11383723926f1",
-				"0x44c10f4cd26dbb33b0cc3bd8d9fb4e313498cfa0", 1, "test",
-				"0x8be2254b13b0f00036f68832b561a679f1b5171638b6e9d5e8656baa2d1ceddc");
+		String tradeHash = ssn.sendRawTransactionTransfer("0xf9efdec0293f5742c24ea35b1bfa0f341bdea51d",
+				"0x44c10f4cd26dbb33b0cc3bd8d9fb4e313498cfa0", 0.001, "test",
+				"0xdb2df9bae17e9e6dd9828254522ccc33ee6765d40f20ba8c3404f8633d487098");
 		System.out.println(tradeHash);
 		System.out.println("-------mh_sendRawTransaction---sendRawTransactionPrivate-------------");
 		System.out.println();
 	}
 	
-	public static void test_sendRawTransaction(SSN ssn) {
+	public static void test_sendRawTransaction(SSN ssn) throws IOException {
 		System.out.println("14-------mh_sendRawTransaction---sendRawTransaction-------------");
 		
 		String abi = "[{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"INITIAL_SUPPLY\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"name\":\"balance\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"},{\"name\":\"_spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"name\":\"remaining\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_owner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_spender\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"}]";
@@ -170,7 +173,7 @@ public class SSNTest {
 		System.out.println();
 	}
 	
-	public static void test_getSignedTx(SSN ssn) {
+	public static void test_getSignedTx(SSN ssn) throws IOException {
 		System.out.println("14-------mh_getSignedTx-------------");
 		
 		String abi = "[{\"constant\":true,\"inputs\":[],\"name\":\"name\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_spender\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"approve\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"totalSupply\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_from\",\"type\":\"address\"},{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transferFrom\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"INITIAL_SUPPLY\",\"outputs\":[{\"name\":\"\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"decimals\",\"outputs\":[{\"name\":\"\",\"type\":\"uint8\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"}],\"name\":\"balanceOf\",\"outputs\":[{\"name\":\"balance\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[],\"name\":\"symbol\",\"outputs\":[{\"name\":\"\",\"type\":\"string\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"constant\":false,\"inputs\":[{\"name\":\"_to\",\"type\":\"address\"},{\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"transfer\",\"outputs\":[{\"name\":\"success\",\"type\":\"bool\"}],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"function\"},{\"constant\":true,\"inputs\":[{\"name\":\"_owner\",\"type\":\"address\"},{\"name\":\"_spender\",\"type\":\"address\"}],\"name\":\"allowance\",\"outputs\":[{\"name\":\"remaining\",\"type\":\"uint256\"}],\"payable\":false,\"stateMutability\":\"view\",\"type\":\"function\"},{\"inputs\":[],\"payable\":false,\"stateMutability\":\"nonpayable\",\"type\":\"constructor\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_from\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_to\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Transfer\",\"type\":\"event\"},{\"anonymous\":false,\"inputs\":[{\"indexed\":true,\"name\":\"_owner\",\"type\":\"address\"},{\"indexed\":true,\"name\":\"_spender\",\"type\":\"address\"},{\"indexed\":false,\"name\":\"_value\",\"type\":\"uint256\"}],\"name\":\"Approval\",\"type\":\"event\"}]";

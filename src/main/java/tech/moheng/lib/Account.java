@@ -46,6 +46,29 @@ public class Account {
 		newWallet.put("keyStore", keyStore);
 		return newWallet;
 	}
+	
+	/**
+	 * 注册国密
+	 * 
+	 * @param password
+	 * @return address privateKey keyStory
+	 * @throws CipherException
+	 * @throws NoSuchProviderException
+	 * @throws NoSuchAlgorithmException
+	 * @throws InvalidAlgorithmParameterException
+	 * @throws IOException 
+	 */
+	public JSONObject registerSM(String password) throws CipherException, InvalidAlgorithmParameterException, NoSuchAlgorithmException, NoSuchProviderException, IOException{
+		ECKeyPair ecKeyPair = Keys.createEcSM2KeyPair();
+		WalletFile walletFile = Wallet.createLightSM(password, ecKeyPair);
+		net.sf.json.JSONObject keyStore = net.sf.json.JSONObject.fromObject(walletFile);
+
+		JSONObject newWallet = new JSONObject();
+		newWallet.put("address", "0x" + walletFile.getAddress());
+		newWallet.put("privateKey", "0x" + ecKeyPair.getPrivateKey().toString(16));
+		newWallet.put("keyStore", keyStore);
+		return newWallet;
+	}
 
 	/**
 	 * 登录 根据keystore和密码获取私钥
@@ -60,6 +83,25 @@ public class Account {
 		WalletFile walletFile = objectMapper.readValue(keyStore, WalletFile.class);
 		Credentials credentials = Credentials.create(Wallet.decrypt(password, walletFile));
 		ECKeyPair ecKeyPair = credentials.getEcKeyPair();
+		String privateKey = "0x" + ecKeyPair.getPrivateKey().toString(16);
+		return privateKey;
+
+	}
+	
+	/**
+	 * 登录国密 根据keystore和密码获取私钥
+	 * 
+	 * @param password
+	 * @param keyStore
+	 * @return
+	 * @throws CipherException
+	 * @throws IOException
+	 */
+	public String loginSM(String password, String keyStore) throws CipherException, IOException {
+		WalletFile walletFile = objectMapper.readValue(keyStore, WalletFile.class);
+		Credentials credentials = Credentials.create(Wallet.decryptSM(password, walletFile));
+		ECKeyPair ecKeyPair = credentials.getEcKeyPair();
+		System.out.println("public:"+ecKeyPair.getPublicKey().toString(16));
 		String privateKey = "0x" + ecKeyPair.getPrivateKey().toString(16);
 		return privateKey;
 

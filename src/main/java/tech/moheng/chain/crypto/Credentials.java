@@ -35,6 +35,10 @@ public class Credentials {
     public static Credentials create(String privateKey) {
         return create(ECKeyPair.create(Numeric.toBigInt(privateKey)));
     }
+    
+    public static Credentials createSM(String privateKey) {
+        return create(ECKeyPair.createSM(Numeric.toBigInt(privateKey)));
+    }
 
     @Override
     public boolean equals(Object o) {
