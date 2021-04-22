@@ -4,7 +4,7 @@
 
 	<groupId>tech.moheng</groupId>
 	<artifactId>super-solid-link</artifactId>
-	<version>1.0.1</version>
+	<version>1.0.2</version>
 	<packaging>jar</packaging>
 	<name>${project.artifactId}</name>
 	<description>moheng super-solid-link</description>

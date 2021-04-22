@@ -105,10 +105,10 @@ public class SSN {
 	 * 
 	 * @return
 	 */
-	public BigDecimal getBlockThreshold() {
-		String result = HttpClient.post(ssnAddress, "mh_getBlockNumber", null);
-		BigDecimal blockNumber = new BigDecimal(new BigInteger(result.substring(2), 16));
-		return blockNumber;
+	public JSONObject getBlockThreshold() {
+		String result = HttpClient.post(ssnAddress, "mh_getBlockThreshold", null);
+		JSONObject blockThreshold = JSONObject.parseObject(result);
+		return blockThreshold;
 	}
 
 	/**
@@ -191,7 +191,7 @@ public class SSN {
 	}
 
 	/**
-	 * 调用子链dapp合约public方法-异步 contractAddress: dapp合约地址 method:
+	 * 调用联盟链dapp合约public方法-异步 contractAddress: dapp合约地址 method:
 	 * 例如合约中存在一个无参的方法getDechatInfo，则传入["getDechatInfo"];
 	 * 存在一个有参的方法getTopicList(uint pageNum, uint pageSize), 则传入["getTopicList",
 	 * "0", "20"] (无论合约数据类型是什么，传入全为字符串格式)
@@ -314,7 +314,7 @@ public class SSN {
 	}
 
 	/**
-	 * 发送子链加签交易(只用于调用需要发送交易的子链合约方法)
+	 * 发送联盟链加签交易(只用于调用需要发送交易的子链合约方法)
 	 * 
 	 * @param fromAddress 发送方钱包地址
 	 * @param contractAddress 合约钱包地址
@@ -359,7 +359,7 @@ public class SSN {
 	}
 	
 	/**
-	 * 发送子链加签交易(只用于调用需要发送交易的子链合约方法)
+	 * 发送联盟链加签交易(只用于调用需要发送交易的子链合约方法)
 	 * nonce 自传
 	 * 
 	 * @param fromAddress 发送方钱包地址
